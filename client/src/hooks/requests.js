@@ -1,22 +1,25 @@
-const API_URL = process.env.NODE_ENV === 'production' ? '' : 'http://localhost:8000';
+const API_URL =
+  process.env.NODE_ENV === "production" ? "" : "http://localhost:8000";
 
 // Load planets and return as JSON.
 async function httpGetPlanets() {
   try {
     const response = await fetch(`${API_URL}/planets`);
-    const data = await response.json();
-    return Array.isArray(data) ? data : [];
-  } catch (error) {
-    console.error('Error fetching planets:', error);
-    return [];
+    if (!response.ok) {
+      throw new Error('Failed to fetch planets');
+    }
+    const data = await response.json();    
+    return data;
+  } catch (error) {    
+    console.log(error);
   }
 }
 
 // Load launches, sort by flight number, and return as JSON.
-async function httpGetLaunches() {  
-  const response = await fetch(`${API_URL}/launches`);  
-  const fetchedLaunches = await response.json();  
-  
+async function httpGetLaunches() {
+  const response = await fetch(`${API_URL}/launches`);
+  const fetchedLaunches = await response.json();
+
   return fetchedLaunches.sort((a, b) => {
     return a.flightNumber - b.flightNumber;
   });
@@ -32,9 +35,9 @@ async function httpSubmitLaunch(launch) {
       },
       body: JSON.stringify(launch),
     });
-    
+
     return response;
-  } catch(err) {
+  } catch (err) {
     return {
       ok: false,
     };
@@ -43,21 +46,17 @@ async function httpSubmitLaunch(launch) {
 
 // Delete launch with given ID.
 async function httpAbortLaunch(id) {
-  // try {
-  //   return await fetch(`${API_URL}/launches/${id}`, {
-  //     method: "delete",
-  //   });
-  // } catch(err) {
-  //   console.log(err);
-  //   return {
-  //     ok: false,
-  //   };
-  // }
+  try {
+    const response = await fetch(`${API_URL}/launches/${id}`, {
+      method: "delete",
+    });
+    return response;
+  } catch (error) {
+    console.log(error);
+    return {
+      ok: false,
+    };
+  }
 }
 
-export {
-  httpGetPlanets,
-  httpGetLaunches,
-  httpSubmitLaunch,
-  httpAbortLaunch,
-};
+export { httpGetPlanets, httpGetLaunches, httpSubmitLaunch, httpAbortLaunch };
